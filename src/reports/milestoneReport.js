@@ -1,19 +1,14 @@
 import * as XLSX from "xlsx";
-import { join } from "path";
-import os from "os";
 
 /**
  * Runs the Milestone Report for the given authenticated page.
+ * Returns an xlsx buffer — the caller decides how to deliver it.
  *
  * @param {import('playwright').Page} page - An already-authenticated CRM page
- * @param {string} [savePath] - Full path where the .xlsx should be saved (defaults to Downloads)
  * @param {object} [opts] - Options passed from the UI: startDate, endDate (mm/dd/yyyy)
+ * @returns {Promise<Buffer>}
  */
-export async function runMilestoneReport(page, savePath, opts = {}) {
-  if (!savePath) {
-    savePath = join(os.homedir(), "Downloads", "milestone-report.xlsx");
-  }
-
+export async function runMilestoneReport(page, opts = {}) {
   const { MARKET, MILESTONE, REPORT_NAME } = process.env;
   const START_DATE = opts.startDate || process.env.START_DATE;
   const END_DATE = opts.endDate || process.env.END_DATE;
@@ -90,7 +85,8 @@ export async function runMilestoneReport(page, savePath, opts = {}) {
   const worksheet = XLSX.utils.json_to_sheet(cleanedRows);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Milestone Report");
-  XLSX.writeFile(workbook, savePath);
 
-  console.log(`✅ Saved ${cleanedRows.length} jobs to ${savePath}`);
+  const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+  console.log(`✅ Generated ${cleanedRows.length} rows for Milestone Report`);
+  return buffer;
 }

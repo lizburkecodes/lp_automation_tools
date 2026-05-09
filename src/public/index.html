@@ -225,14 +225,6 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="savePath">Save report to</label>
-        <div style="display:flex;gap:8px;">
-          <input type="text" id="savePath" placeholder="Loading…" style="flex:1;" readonly />
-          <button type="button" onclick="chooseSavePath()" style="padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:8px;background:white;cursor:pointer;font-size:13px;font-weight:600;color:#555;white-space:nowrap;">Choose…</button>
-        </div>
-      </div>
-
       <button class="run-btn" onclick="runProcess()">Run</button>
 
       <div id="status"></div>
@@ -252,40 +244,16 @@
 
       function onProcessChange() {
         const process = document.getElementById("process").value;
-
-        // Show/hide process-specific option panels
         Object.values(PROCESS_OPTS).forEach((id) => {
           const el = document.getElementById(id);
           if (el) el.style.display = "none";
         });
         const activeOpts = PROCESS_OPTS[process];
         if (activeOpts) document.getElementById(activeOpts).style.display = "block";
-
-        // Reset save path default name
-        const name = DEFAULT_NAMES[process] || "report.xlsx";
-        const savePathEl = document.getElementById("savePath");
-        if (!savePathEl.dataset.custom) {
-          savePathEl.value = `~/Downloads/${name}`;
-          savePathEl.dataset.defaultName = name;
-        }
-      }
-
-      async function chooseSavePath() {
-        const process = document.getElementById("process").value;
-        const name = DEFAULT_NAMES[process] || "report.xlsx";
-        const savePathEl = document.getElementById("savePath");
-
-        // Use Electron IPC directly — no HTTP, no silent failures
-        const result = await window.electronAPI.chooseSavePath(name);
-        if (!result.cancelled && result.filePath) {
-          savePathEl.value = result.filePath;
-          savePathEl.dataset.custom = "true";
-        }
       }
 
       // Initialise on load
       window.addEventListener("DOMContentLoaded", () => {
-        // Default: start = first of this month, end = today
         const today = new Date();
         const pad = (n) => String(n).padStart(2, "0");
         const yyyy = today.getFullYear();
@@ -293,7 +261,6 @@
         const dd = pad(today.getDate());
         document.getElementById("startDate").value = `${yyyy}-${mm}-01`;
         document.getElementById("endDate").value = `${yyyy}-${mm}-${dd}`;
-
         onProcessChange();
       });
 
@@ -310,7 +277,6 @@
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
         const process = document.getElementById("process").value;
-        const savePathEl = document.getElementById("savePath");
         const statusEl = document.getElementById("status");
         const btn = document.querySelector(".run-btn");
 
@@ -325,14 +291,10 @@
             statusEl.style.display = "block";
             return;
           }
-          // Convert yyyy-mm-dd → mm/dd/yyyy for the CRM
           const fmt = (d) => { const [y, m, day] = d.split("-"); return `${m}/${day}/${y}`; };
           opts.startDate = fmt(startDate);
           opts.endDate = fmt(endDate);
         }
-
-        // Resolve save path
-        let savePath = savePathEl.dataset.custom ? savePathEl.value : null;
 
         if (!username || !password) {
           statusEl.className = "error";
@@ -350,21 +312,29 @@
           const res = await fetch("/run", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ company: selectedCompany, username, password, process, savePath, opts }),
+            body: JSON.stringify({ company: selectedCompany, username, password, process, opts }),
           });
 
-          const data = await res.json();
-
-          if (res.ok) {
-            statusEl.className = "success";
-            statusEl.innerHTML = "✅ " + data.message;
-          } else {
-            statusEl.className = "error";
-            statusEl.innerHTML = "❌ " + data.error;
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || "Something went wrong.");
           }
+
+          // Server sends the file as a download — trigger it in the browser
+          const blob = await res.blob();
+          const filename = res.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] || "report.xlsx";
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(url);
+
+          statusEl.className = "success";
+          statusEl.innerHTML = "✅ Report complete — check your downloads.";
         } catch (err) {
           statusEl.className = "error";
-          statusEl.innerHTML = "❌ Could not reach the automation server.";
+          statusEl.innerHTML = "❌ " + err.message;
         } finally {
           btn.disabled = false;
         }
