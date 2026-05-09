@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LeadPerfection Automation</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #f0f2f5;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 480px;
+      }
+
+      .logo {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .logo h1 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a1a2e;
+      }
+
+      .logo p {
+        font-size: 13px;
+        color: #888;
+        margin-top: 4px;
+      }
+
+      .company-select {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+
+      .company-btn {
+        flex: 1;
+        padding: 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+        color: #555;
+        transition: all 0.2s;
+      }
+
+      .company-btn:hover {
+        border-color: #4a6cf7;
+        color: #4a6cf7;
+      }
+
+      .company-btn.active {
+        border-color: #4a6cf7;
+        background: #4a6cf7;
+        color: white;
+      }
+
+      .form-group {
+        margin-bottom: 18px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 6px;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      input[type="date"],
+      select {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #333;
+        transition: border-color 0.2s;
+        background: white;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #4a6cf7;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid #eee;
+        margin: 24px 0;
+      }
+
+      .run-btn {
+        width: 100%;
+        padding: 14px;
+        background: #4a6cf7;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .run-btn:hover {
+        background: #3a5ce7;
+      }
+
+      .run-btn:disabled {
+        background: #a0aec0;
+        cursor: not-allowed;
+      }
+
+      #status {
+        margin-top: 20px;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        display: none;
+        text-align: center;
+      }
+
+      #status.running {
+        display: block;
+        background: #ebf4ff;
+        color: #2b6cb0;
+      }
+
+      #status.success {
+        display: block;
+        background: #f0fff4;
+        color: #276749;
+      }
+
+      #status.error {
+        display: block;
+        background: #fff5f5;
+        color: #c53030;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid currentColor;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+        margin-right: 6px;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="logo">
+        <h1>LeadPerfection Automation</h1>
+        <p>Select a company and process to get started</p>
+      </div>
+
+      <div class="company-select">
+        <button class="company-btn active" data-company="ArmorVue" onclick="selectCompany('ArmorVue')">ArmorVue</button>
+        <button class="company-btn" data-company="NewSouth" onclick="selectCompany('NewSouth')">NewSouth</button>
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="CRM username" autocomplete="username" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="CRM password" autocomplete="current-password" />
+      </div>
+
+      <hr class="divider" />
+
+      <div class="form-group">
+        <label for="process">Process</label>
+        <select id="process" onchange="onProcessChange()">
+          <option value="Milestone Report">Milestone Report</option>
+        </select>
+      </div>
+
+      <!-- Process-specific options (shown/hidden dynamically) -->
+      <div id="opts-milestone">
+        <div style="display:flex;gap:12px;">
+          <div class="form-group" style="flex:1;">
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" />
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="savePath">Save report to</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="savePath" placeholder="Loading…" style="flex:1;" readonly />
+          <button type="button" onclick="chooseSavePath()" style="padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:8px;background:white;cursor:pointer;font-size:13px;font-weight:600;color:#555;white-space:nowrap;">Choose…</button>
+        </div>
+      </div>
+
+      <button class="run-btn" onclick="runProcess()">Run</button>
+
+      <div id="status"></div>
+    </div>
+
+    <script>
+      let selectedCompany = "ArmorVue";
+
+      // ── Filename helpers ────────────────────────────────────────────────────
+      const DEFAULT_NAMES = {
+        "Milestone Report": "milestone-report.xlsx",
+      };
+
+      const PROCESS_OPTS = {
+        "Milestone Report": "opts-milestone",
+      };
+
+      function onProcessChange() {
+        const process = document.getElementById("process").value;
+
+        // Show/hide process-specific option panels
+        Object.values(PROCESS_OPTS).forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = "none";
+        });
+        const activeOpts = PROCESS_OPTS[process];
+        if (activeOpts) document.getElementById(activeOpts).style.display = "block";
+
+        // Reset save path default name
+        const name = DEFAULT_NAMES[process] || "report.xlsx";
+        const savePathEl = document.getElementById("savePath");
+        if (!savePathEl.dataset.custom) {
+          savePathEl.value = `~/Downloads/${name}`;
+          savePathEl.dataset.defaultName = name;
+        }
+      }
+
+      async function chooseSavePath() {
+        const process = document.getElementById("process").value;
+        const name = DEFAULT_NAMES[process] || "report.xlsx";
+        const savePathEl = document.getElementById("savePath");
+
+        // Use Electron IPC directly — no HTTP, no silent failures
+        const result = await window.electronAPI.chooseSavePath(name);
+        if (!result.cancelled && result.filePath) {
+          savePathEl.value = result.filePath;
+          savePathEl.dataset.custom = "true";
+        }
+      }
+
+      // Initialise on load
+      window.addEventListener("DOMContentLoaded", () => {
+        // Default: start = first of this month, end = today
+        const today = new Date();
+        const pad = (n) => String(n).padStart(2, "0");
+        const yyyy = today.getFullYear();
+        const mm = pad(today.getMonth() + 1);
+        const dd = pad(today.getDate());
+        document.getElementById("startDate").value = `${yyyy}-${mm}-01`;
+        document.getElementById("endDate").value = `${yyyy}-${mm}-${dd}`;
+
+        onProcessChange();
+      });
+
+      // ── Company selection ───────────────────────────────────────────────────
+      function selectCompany(company) {
+        selectedCompany = company;
+        document.querySelectorAll(".company-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.company === company);
+        });
+      }
+
+      // ── Run ─────────────────────────────────────────────────────────────────
+      async function runProcess() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        const process = document.getElementById("process").value;
+        const savePathEl = document.getElementById("savePath");
+        const statusEl = document.getElementById("status");
+        const btn = document.querySelector(".run-btn");
+
+        // Gather process-specific options
+        const opts = {};
+        if (process === "Milestone Report") {
+          const startDate = document.getElementById("startDate").value;
+          const endDate = document.getElementById("endDate").value;
+          if (!startDate || !endDate) {
+            statusEl.className = "error";
+            statusEl.innerHTML = "⚠️ Please select a start and end date.";
+            statusEl.style.display = "block";
+            return;
+          }
+          // Convert yyyy-mm-dd → mm/dd/yyyy for the CRM
+          const fmt = (d) => { const [y, m, day] = d.split("-"); return `${m}/${day}/${y}`; };
+          opts.startDate = fmt(startDate);
+          opts.endDate = fmt(endDate);
+        }
+
+        // Resolve save path
+        let savePath = savePathEl.dataset.custom ? savePathEl.value : null;
+
+        if (!username || !password) {
+          statusEl.className = "error";
+          statusEl.innerHTML = "⚠️ Please enter your username and password.";
+          statusEl.style.display = "block";
+          return;
+        }
+
+        btn.disabled = true;
+        statusEl.className = "running";
+        statusEl.innerHTML = '<span class="spinner"></span> Running — the browser will open automatically…';
+        statusEl.style.display = "block";
+
+        try {
+          const res = await fetch("/run", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ company: selectedCompany, username, password, process, savePath, opts }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            statusEl.className = "success";
+            statusEl.innerHTML = "✅ " + data.message;
+          } else {
+            statusEl.className = "error";
+            statusEl.innerHTML = "❌ " + data.error;
+          }
+        } catch (err) {
+          statusEl.className = "error";
+          statusEl.innerHTML = "❌ Could not reach the automation server.";
+        } finally {
+          btn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,16 +1,54 @@
 {
   "name": "leadperfection-automation",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "LeadPerfection CRM automation tool",
+  "main": "electron.cjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron .",
+    "dev": "node index.js",
+    "dist": "electron-builder"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
+  "build": {
+    "appId": "com.leadperfection.automation",
+    "productName": "LeadPerfection Automation",
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.business"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "files": [
+      "electron.cjs",
+      "preload.cjs",
+      "server.cjs",
+      "index.js",
+      "src/**/*",
+      "node_modules/**/*",
+      ".env"
+    ],
+    "extraResources": [
+      {
+        "from": ".env",
+        "to": ".env",
+        "filter": ["**/*"]
+      }
+    ]
+  },
   "dependencies": {
-    "playwright": "^1.59.1"
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "inquirer": "^13.4.2",
+    "playwright": "^1.59.1",
+    "prompt-sync": "^4.2.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^42.0.1",
+    "electron-builder": "^26.8.1"
   }
 }
