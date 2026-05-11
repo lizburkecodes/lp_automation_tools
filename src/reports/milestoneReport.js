@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 
 /**
- * Runs the Milestone Report for the given authenticated page.
+ * Runs the Jobs by Milestone Date for the given authenticated page.
  * Returns an xlsx buffer — the caller decides how to deliver it.
  *
  * @param {import('playwright').Page} page - An already-authenticated CRM page
@@ -84,9 +84,9 @@ export async function runMilestoneReport(page, opts = {}) {
 
   const worksheet = XLSX.utils.json_to_sheet(cleanedRows);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Milestone Report");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Jobs by Milestone Date");
 
   const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
-  console.log(`✅ Generated ${cleanedRows.length} rows for Milestone Report`);
+  console.log(`Generated ${cleanedRows.length} rows for Jobs by Milestone Date`);
   return buffer;
 }

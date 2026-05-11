@@ -43,7 +43,7 @@ app.post("/run", async (req, res) => {
 
     let buffer;
     let filename;
-    if (selectedProcess === "Milestone Report") {
+    if (selectedProcess === "Jobs by Milestone Date") {
       buffer = await runMilestoneReport(page, opts);
       filename = "milestone-report.xlsx";
     }
@@ -68,6 +68,6 @@ app.post("/run", async (req, res) => {
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`\n✅ Automation UI ready → http://localhost:${PORT}`);
-  console.log("   Open that URL in your browser to get started.\n");
+  console.log(`\n Automation UI ready → http://localhost:${PORT}`);
+  console.log("   Open URL in your browser to get started.\n");
 });

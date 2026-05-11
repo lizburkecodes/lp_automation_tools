@@ -69,7 +69,7 @@ app.whenReady().then(async () => {
       browser = await chromium.launch({ headless: false });
       const page = await login(browser, COMPANIES[company], username, password);
 
-      if (selectedProcess === "Milestone Report") {
+      if (selectedProcess === "Jobs by Milestone Date") {
         await runMilestoneReport(page, finalSavePath, opts);
       } else {
         throw new Error(`Unknown process: ${selectedProcess}`);

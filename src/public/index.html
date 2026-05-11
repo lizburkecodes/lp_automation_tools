@@ -207,7 +207,7 @@
       <div class="form-group">
         <label for="process">Process</label>
         <select id="process" onchange="onProcessChange()">
-          <option value="Milestone Report">Milestone Report</option>
+          <option value="Jobs by Milestone Date">Jobs by Milestone Date</option>
         </select>
       </div>
 
@@ -235,11 +235,11 @@
 
       // ── Filename helpers ────────────────────────────────────────────────────
       const DEFAULT_NAMES = {
-        "Milestone Report": "milestone-report.xlsx",
+        "Jobs by Milestone Date": "milestone-report.xlsx",
       };
 
       const PROCESS_OPTS = {
-        "Milestone Report": "opts-milestone",
+        "Jobs by Milestone Date": "opts-milestone",
       };
 
       function onProcessChange() {
@@ -282,7 +282,7 @@
 
         // Gather process-specific options
         const opts = {};
-        if (process === "Milestone Report") {
+        if (process === "Jobs by Milestone Date") {
           const startDate = document.getElementById("startDate").value;
           const endDate = document.getElementById("endDate").value;
           if (!startDate || !endDate) {
@@ -331,10 +331,10 @@
           URL.revokeObjectURL(url);
 
           statusEl.className = "success";
-          statusEl.innerHTML = "✅ Report complete — check your downloads.";
+          statusEl.innerHTML = "Report complete — check your downloads.";
         } catch (err) {
           statusEl.className = "error";
-          statusEl.innerHTML = "❌ " + err.message;
+          statusEl.innerHTML = "ERROR: " + err.message;
         } finally {
           btn.disabled = false;
         }
